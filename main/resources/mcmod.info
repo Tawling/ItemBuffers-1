@@ -1,0 +1,16 @@
+[
+{
+  "modid": "itembuffers",
+  "name": "Item Buffers",
+  "description": "Variable stack sizes are useful.",
+  "version": "0.1",
+  "mcversion": "1.11.2",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["BlameTaw"],
+  "credits": "I get all the credit. I'm the author.",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
