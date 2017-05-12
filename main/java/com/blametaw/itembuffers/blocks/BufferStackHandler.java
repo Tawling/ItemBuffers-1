@@ -13,34 +13,47 @@ public class BufferStackHandler extends ItemStackHandler {
 	protected TileEntity tileEntity;
 	
 	protected int[] stackLimits;
+	protected boolean useFilters;
+	
+	protected ItemStack[] filters;
 	
 	protected int maxLimit = 64;
-	
-	public BufferStackHandler(TileEntity tileEntity){
-		this(1, 64, tileEntity);
-	}
 	
 	public BufferStackHandler(int size, int maxLimit, TileEntity tileEntity){
 		super(size);
 		this.tileEntity = tileEntity;
 		stackLimits = new int[size];
+		filters = new ItemStack[size];
+		stackLimits[0] = maxLimit;
+		useFilters = true;
+		
 	}
 	
 	public boolean isStackValidForSlot(int slot, ItemStack stack){
 		if (stack != null && stack.getCount() > 0){
-			//if any other stack contains the item, return false
-			//if any other stack contains a filter for the item, return false
+			//TODO: if any other stack contains the item, return false
+			//TODO: if any other stack contains a filter for the item, return false
 			return true;
 		}
 		return false;
 	}
 	
+	@Override
 	protected int getStackLimit(int slot, ItemStack stack){
 		return Math.min(getBufferSize(slot),super.getStackLimit(slot, stack));
 	}
 	
+	public boolean isFiltered(){
+		return useFilters;
+	}
+	
+	public ItemStack getFilterForSlot(int slot){
+		//TODO: return filter slot item
+		return ItemStack.EMPTY;
+	}
 	
 	protected void onContentsChanged(int slot){
+		System.out.println(getFillPercent());
 		tileEntity.getWorld().updateComparatorOutputLevel(tileEntity.getPos(), tileEntity.getWorld().getBlockState(tileEntity.getPos()).getBlock());
 	}
 	
@@ -53,6 +66,20 @@ public class BufferStackHandler extends ItemStackHandler {
 	public int getBufferSize(int slot){
 		validateSlotIndex(slot);
 		return this.stackLimits[slot];
+	}
+	
+	public void incrementBufferSize(int slot){
+		validateSlotIndex(slot);
+		if (this.stackLimits[slot] < maxLimit) {
+			this.setBufferSize(slot,this.stackLimits[slot] + 1);
+		}
+	}
+	
+	public void decrementBufferSize(int slot){
+		validateSlotIndex(slot);
+		if (this.stackLimits[slot] > 0) {
+			this.setBufferSize(slot,this.stackLimits[slot] - 1);
+		}
 	}
 	
 	protected void ejectExcessItems(){
@@ -77,7 +104,7 @@ public class BufferStackHandler extends ItemStackHandler {
 	public float getFillPercent(int slot){
 		if (getStackInSlot(slot) == null) return 0.0f;
 		float max = Math.min(getStackInSlot(slot).getMaxStackSize(),getBufferSize(slot));
-		return max / getStackInSlot(slot).getCount();
+		return getStackInSlot(slot).getCount() / max;
 	}
 	
 	@Override
@@ -89,7 +116,9 @@ public class BufferStackHandler extends ItemStackHandler {
 	
 	@Override
 	public void deserializeNBT(NBTTagCompound nbt){
+		System.out.println(nbt);
 		stackLimits = nbt.getIntArray("stackLimits");
+		System.out.println("STACK LIMITS SIZE: " + stackLimits.length);
 		super.deserializeNBT(nbt);
 	}
 }

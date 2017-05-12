@@ -1,4 +1,6 @@
-package com.blametaw.itembuffers.blocks;
+package com.blametaw.gui;
+
+import com.blametaw.itembuffers.blocks.TileEntityBasicBuffer;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;

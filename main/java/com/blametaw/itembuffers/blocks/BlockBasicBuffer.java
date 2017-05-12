@@ -18,6 +18,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
+import com.blametaw.gui.BasicBufferGuiHandler;
 import com.blametaw.itembuffers.ItemBuffers;
 import com.blametaw.itembuffers.Reference;
 
@@ -29,6 +30,7 @@ public class BlockBasicBuffer extends BlockContainer {
 		setRegistryName(Reference.ItemBufferBlocks.BASICBUFFER.getRegistryName());
 		
 		setResistance(6.0f);
+		this.setHardness(3.5f);
 	}
 
 	@Override
@@ -74,7 +76,8 @@ public class BlockBasicBuffer extends BlockContainer {
 		IItemHandler handler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 		if (handler.getStackInSlot(0) != null && handler.getStackInSlot(0).getCount() > 0){
 			float fill = ((BufferStackHandler)handler).getFillPercent();
-			return (int)Math.floor(fill*15);
+			if (fill == 0) return 0;
+			return (int)Math.floor(fill*14) + 1;
 		}
 		return 0;
 	}
