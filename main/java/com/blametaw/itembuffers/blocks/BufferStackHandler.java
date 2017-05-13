@@ -1,5 +1,7 @@
 package com.blametaw.itembuffers.blocks;
 
+import javax.annotation.Nonnull;
+
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -7,6 +9,7 @@ import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 
 public class BufferStackHandler extends ItemStackHandler {
@@ -21,20 +24,87 @@ public class BufferStackHandler extends ItemStackHandler {
 	
 	public BufferStackHandler(int size, int maxLimit, TileEntity tileEntity){
 		super(size);
+		this.maxLimit = maxLimit;
 		this.tileEntity = tileEntity;
 		stackLimits = new int[size];
 		filters = new ItemStack[size];
-		stackLimits[0] = maxLimit;
+		for(int i = 0; i < size; i++){
+			stackLimits[i] = maxLimit;
+		}
 		useFilters = true;
 		
 	}
 	
 	public boolean isStackValidForSlot(int slot, ItemStack stack){
 		if (stack != null && stack.getCount() > 0){
-			//TODO: if any other stack contains the item, return false
-			//TODO: if any other stack contains a filter for the item, return false
+			//if any other stack contains the item, return false
+			//if any other stack contains a filter for the item, return false
+			for(int i = 0; i < getSlots(); i++) {
+				if (i != slot) {
+					//not sure if getCount() is necessary, but I'll leave it
+					if (getStackInSlot(i) != null && getStackInSlot(i).getCount() > 0 && getStackInSlot(i).isItemEqual(stack)) {
+						return false;
+					}
+					if (getFilterForSlot(i) != null && getFilterForSlot(i).isItemEqual(stack)) {
+						return false;
+					}
+				}
+			}
+			if (getFilterForSlot(slot) != null && getFilterForSlot(slot).getCount() > 0) {
+				return getFilterForSlot(slot).isItemEqual(stack);
+			}
 			return true;
 		}
+		return false;
+	}
+	
+	@Override
+    @Nonnull
+    public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate)
+    {
+        if (stack.isEmpty())
+            return ItemStack.EMPTY;
+        
+        if (!isStackValidForSlot(slot,stack)) return stack;
+
+        validateSlotIndex(slot);
+
+        ItemStack existing = this.stacks.get(slot);
+
+        int limit = getStackLimit(slot, stack);
+
+        if (!existing.isEmpty())
+        {
+            if (!ItemHandlerHelper.canItemStacksStack(stack, existing))
+                return stack;
+
+            limit -= existing.getCount();
+        }
+
+        if (limit <= 0)
+            return stack;
+
+        boolean reachedLimit = stack.getCount() > limit;
+
+        if (!simulate)
+        {
+            if (existing.isEmpty())
+            {
+                this.stacks.set(slot, reachedLimit ? ItemHandlerHelper.copyStackWithSize(stack, limit) : stack);
+            }
+            else
+            {
+                existing.grow(reachedLimit ? limit : stack.getCount());
+            }
+            onContentsChanged(slot);
+        }
+
+        return reachedLimit ? ItemHandlerHelper.copyStackWithSize(stack, stack.getCount()- limit) : ItemStack.EMPTY;
+    }
+	
+	public boolean isFilterValidForSlot(int slot, ItemStack stack){
+		//if any other stack contains the item, return false
+		//if any other stack contains a filter for the item, return false
 		return false;
 	}
 	
@@ -60,7 +130,7 @@ public class BufferStackHandler extends ItemStackHandler {
 	public void setBufferSize(int slot, int limit){
 		validateSlotIndex(slot);
 		this.stackLimits[slot] = limit;
-		ejectExcessItems();
+		//ejectExcessItems();
 	}
 	
 	public int getBufferSize(int slot){
@@ -82,7 +152,7 @@ public class BufferStackHandler extends ItemStackHandler {
 		}
 	}
 	
-	protected void ejectExcessItems(){
+	public void ejectExcessItems(){
 		for(int i = 0; i < getSlots(); i++){
 			ItemStack stack = getStackInSlot(i);
 			if (stack.getCount() > getBufferSize(i)){
@@ -116,9 +186,9 @@ public class BufferStackHandler extends ItemStackHandler {
 	
 	@Override
 	public void deserializeNBT(NBTTagCompound nbt){
+		super.deserializeNBT(nbt);
 		System.out.println(nbt);
 		stackLimits = nbt.getIntArray("stackLimits");
 		System.out.println("STACK LIMITS SIZE: " + stackLimits.length);
-		super.deserializeNBT(nbt);
 	}
 }

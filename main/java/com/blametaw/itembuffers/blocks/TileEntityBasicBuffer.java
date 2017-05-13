@@ -19,7 +19,7 @@ public class TileEntityBasicBuffer extends TileEntity implements ICapabilityProv
 	
 	public TileEntityBasicBuffer(){
 		//Currently just a stack of 1 item.
-		this.handler = new BufferStackHandler(1, 64, this);
+		this.handler = new BufferStackHandler(2, 64, this);
 	}
 	
 	@Override
@@ -67,39 +67,36 @@ public class TileEntityBasicBuffer extends TileEntity implements ICapabilityProv
 	
 //	// When the world loads from disk, the server needs to send the TileEntity information to the client
 //	//  it uses getUpdatePacket(), getUpdateTag(), onDataPacket(), and handleUpdateTag() to do this
-  @Override
-  @Nullable
-  public SPacketUpdateTileEntity getUpdatePacket()
-  {
-    NBTTagCompound updateTagDescribingTileEntityState = getUpdateTag();
-    final int METADATA = 0;
-    return new SPacketUpdateTileEntity(this.pos, METADATA, updateTagDescribingTileEntityState);
-  }
+	@Override
+	@Nullable
+	public SPacketUpdateTileEntity getUpdatePacket(){
+		NBTTagCompound updateTagDescribingTileEntityState = getUpdateTag();
+		final int METADATA = 0;
+		return new SPacketUpdateTileEntity(this.pos, METADATA, updateTagDescribingTileEntityState);
+	}
 
-  @Override
-  public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-    NBTTagCompound updateTagDescribingTileEntityState = pkt.getNbtCompound();
-    handleUpdateTag(updateTagDescribingTileEntityState);
-  }
+	@Override
+	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+		NBTTagCompound updateTagDescribingTileEntityState = pkt.getNbtCompound();
+		handleUpdateTag(updateTagDescribingTileEntityState);
+	}
 
   /* Creates a tag containing the TileEntity information, used by vanilla to transmit from server to client
      Warning - although our getUpdatePacket() uses this method, vanilla also calls it directly, so don't remove it.
    */
-  @Override
-  public NBTTagCompound getUpdateTag()
-  {
+	@Override
+	public NBTTagCompound getUpdateTag(){
 		NBTTagCompound nbtTagCompound = new NBTTagCompound();
 		writeToNBT(nbtTagCompound);
-    return nbtTagCompound;
-  }
+		return nbtTagCompound;
+	}
 
   /* Populates this TileEntity with information from the tag, used by vanilla to transmit from server to client
    Warning - although our onDataPacket() uses this method, vanilla also calls it directly, so don't remove it.
  */
-  @Override
-  public void handleUpdateTag(NBTTagCompound tag)
-  {
-    this.readFromNBT(tag);
-  }
+	@Override
+	public void handleUpdateTag(NBTTagCompound tag){
+		this.readFromNBT(tag);
+	}
 	
 }

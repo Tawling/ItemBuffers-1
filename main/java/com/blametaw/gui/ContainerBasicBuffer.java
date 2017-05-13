@@ -67,12 +67,12 @@ public class ContainerBasicBuffer extends Container {
 		//Add TE slots
 		final int TE_SLOT_SPACING = 24;
 		final int TE_SLOT_WIDTH = 18;
-		final int TE_SLOT_X = WIDTH/2 - (TE_SLOT_COUNT-1)*TE_SLOT_SPACING - TE_SLOT_WIDTH/2 + 1;
+		final int TE_SLOT_X = WIDTH/2 - ((TE_SLOT_COUNT-1)*TE_SLOT_SPACING + TE_SLOT_WIDTH)/2 + 1;
 		final int TE_SLOT_Y = 13;
 		for(int x = 0; x < TE_SLOT_COUNT; x++){
 			int slot = TE_FIRST_SLOT_INDEX + x;
 			BufferSlot bufferSlot = new BufferSlot(handler, x, TE_SLOT_X + x * TE_SLOT_SPACING, TE_SLOT_Y, handler, x);
-			teSlots[0] = bufferSlot;
+			teSlots[x] = bufferSlot;
 			addSlotToContainer(bufferSlot);
 		}
 		
@@ -97,6 +97,13 @@ public class ContainerBasicBuffer extends Container {
 	
 	public BufferStackHandler getItemHandler(){
 		return handler;
+	}
+	
+	@Override
+	public void onContainerClosed(EntityPlayer playerIn){
+		if (playerIn.world.isRemote){
+			//TODO: drop items here?
+		}
 	}
 
 }

@@ -36,10 +36,6 @@ public class BufferSlot extends SlotItemHandler {
 		return this.handler.getFilterForSlot(bufferSlotNum);
 	}
 	
-	public ItemStack getStack(){
-		return this.handler.getStackInSlot(bufferSlotNum);
-	}
-	
 	
 
 }

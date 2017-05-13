@@ -1,5 +1,8 @@
 package com.blametaw.itembuffers;
 
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+
 public class Reference {
 	
 	public static final String MODID = "itembuffers";
@@ -10,6 +13,7 @@ public class Reference {
 	public static final String CLIENT_PROXY_CLASS = "com.blametaw.itembuffers.proxy.ClientProxy";
 	public static final String SERVER_PROXY_CLASS = "com.blametaw.itembuffers.proxy.ServerProxy";
 	
+	public static final SimpleNetworkWrapper networkWrapperInstance = NetworkRegistry.INSTANCE.newSimpleChannel(Reference.MODID);
 	
 	public static enum ItemBufferBlocks {
 		BASICBUFFER("blockbasicbuffer", "blockbasicbuffer");

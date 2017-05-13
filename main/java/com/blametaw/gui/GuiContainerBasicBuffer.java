@@ -1,6 +1,8 @@
 package com.blametaw.gui;
 
 import com.blametaw.itembuffers.Reference;
+import com.blametaw.itembuffers.blocks.BufferEjectMessage;
+import com.sun.jna.platform.win32.BaseTSD.SSIZE_T;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -26,10 +28,9 @@ public class GuiContainerBasicBuffer extends GuiContainer {
 	@Override
 	public void initGui(){
 		super.initGui();
-		int buttonId = 0;
 		for (BufferSlot s : this.container.teSlots){
-			this.buttonList.add(new GuiButtonIncrease(2*buttonId,guiLeft + s.xPos - 1,guiTop + s.yPos + 20));
-			this.buttonList.add(new GuiButtonDecrease(2*buttonId + 1,guiLeft + s.xPos - 1,guiTop + s.yPos + 37));
+			this.buttonList.add(new GuiButtonIncrease(2*s.bufferSlotNum, guiLeft + s.xPos - 1, guiTop + s.yPos + 20));
+			this.buttonList.add(new GuiButtonDecrease(2*s.bufferSlotNum + 1, guiLeft + s.xPos - 1, guiTop + s.yPos + 37));
 		}
 	}
 
@@ -43,24 +44,28 @@ public class GuiContainerBasicBuffer extends GuiContainer {
 				this.drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 				
 				for (BufferSlot s : this.container.teSlots){
-					//Draw actual slot
-					this.drawTexturedModalRect(guiLeft + s.xPos - 1, guiTop + s.yPos - 1, 178, 0, 18, 18);
-					//Draw stack size background
-					this.drawTexturedModalRect(guiLeft + s.xPos - 1, guiTop + s.yPos + 28, 178, 29, 18, 9);
-					//If filter, draw filter
-					if (s.hasFilter()){
-						mc.getTextureManager().bindTexture(texture);
-						this.drawTexturedModalRect(guiLeft + s.xPos - 1, guiTop + s.yPos + 48,
-								178 + (s.getStackFilter() != null && s.getStackFilter().getCount() > 0 ? 18 : 0), 49,
-								18, 18);
+					if (s != null) {
+						//Draw actual slot
+						this.drawTexturedModalRect(guiLeft + s.xPos - 1, guiTop + s.yPos - 1, 178, 0, 18, 18);
+						//Draw stack size background
+						this.drawTexturedModalRect(guiLeft + s.xPos - 1, guiTop + s.yPos + 28, 178, 29, 18, 9);
+						//If filter, draw filter
+						if (s.hasFilter()){
+							mc.getTextureManager().bindTexture(texture);
+							this.drawTexturedModalRect(guiLeft + s.xPos - 1, guiTop + s.yPos + 48,
+									178 + (s.getStackFilter() != null && s.getStackFilter().getCount() > 0 ? 18 : 0), 49,
+									18, 18);
+						}
 					}
 				}
 				for (BufferSlot s : this.container.teSlots){
-					//Draw stack size text
-					this.fontRendererObj.drawString("" + s.getSlotStackLimit(),
-							guiLeft + s.xPos + 12 - this.fontRendererObj.getStringWidth("" + s.getSlotStackLimit())/2,
-							guiTop + s.yPos + 29,
-							0x4C4C4C);
+					if (s != null){
+						//Draw stack size text
+						this.fontRendererObj.drawString("" + s.getSlotStackLimit(),
+								guiLeft + s.xPos + 12 - this.fontRendererObj.getStringWidth("" + s.getSlotStackLimit())/2,
+								guiTop + s.yPos + 29,
+								0x4C4C4C);
+					}
 				}
 	}
 	
@@ -80,5 +85,10 @@ public class GuiContainerBasicBuffer extends GuiContainer {
 			container.getItemHandler().decrementBufferSize(slot);
 		}
 		container.detectAndSendChanges();
+	}
+	
+	@Override
+	public void onGuiClosed(){
+		Reference.networkWrapperInstance.sendToServer(new BufferEjectMessage(container.getTileEntity().getPos(), container.getTileEntity().getWorld().provider.getDimension()));
 	}
 }
